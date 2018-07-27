@@ -3,7 +3,7 @@ MAINTAINER yx59@duke.edu
 
 ENV PACKAGES git make gcc g++ bc zlib1g-dev python-pip \
 	     python-dev python-jinja2 python-tornado python-nose screen \
-	     python-numpy python-matplotlib wget curl unzip pkg-conf
+	     python-numpy python-matplotlib wget curl unzip pkg-config time
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ${PACKAGES} 
@@ -54,9 +54,9 @@ WORKDIR /usr/local/src
 RUN ldconfig
 RUN wget http://minia.genouest.org/dsk/dsk-1.5031.tar.gz
 RUN tar zxvf dsk-1.5031.tar.gz
-WORK dsk-1.5031/
+WORKDIR dsk-1.5031/
 RUN make omp=1
-RUN dsk /usr/local/bin
+RUN cp dsk /usr/local/bin
 
 
 # Install KMC
@@ -82,7 +82,13 @@ RUN tar xjf libgtextutils-0.6.1.tar.bz2
 WORKDIR libgtextutils-0.6.1/
 RUN ./configure && make && make install
 
-RUN apt-get install fastx-toolkit
+WORKDIR /usr/local/src
+RUN curl -O http://hannonlab.cshl.edu/fastx_toolkit/fastx_toolkit-0.0.13.2.tar.bz2
+RUN tar xjf fastx_toolkit-0.0.13.2.tar.bz2
+WORKDIR fastx_toolkit-0.0.13.2/
+RUN ./configure && make && make install
+
+#RUN apt-get install fastx-toolkit
 
 
 # Install Trimmomatic 
@@ -96,17 +102,17 @@ RUN cp -r adapters /usr/local/share/adapters
 # Install seqtk
 WORKDIR /usr/local/src
 RUN git clone git://github.com/lh3/seqtk.git
-RUN cd seqtk
+WORKDIR seqtk
 RUN make
 RUN cp seqtk /usr/local/bin
 
 
 # Install Java
-RUN apt-get install default-jre
+RUN apt-get -y install default-jre
 
 
 # Install ipython
-RUN apt-get install ipython
+RUN apt-get -y install ipython
 
 
 # Upgrade pyzmq, which is required by ipython notebook
@@ -125,8 +131,10 @@ RUN pip install --upgrade patsy
 RUN apt-get install libfreetype6-dev libpng-dev
 RUN pip install matplotlib
 
-RUN apt-get install pkg-config
-RUN apt-get install libblas-dev liblapack-dev
+RUN apt-get -y install gfortran
+
+RUN apt-get -y install pkg-config
+RUN apt-get -y install libblas-dev liblapack-dev
 RUN pip install seaborn
 RUN pip install --upgrade six
 RUN pip install --upgrade statsmodels
@@ -169,5 +177,5 @@ WORKDIR /usr/local/src
 RUN echo 'export PYTHONPATH=/usr/local/src/khmer/python' >> ~/.bashrc
 RUN echo 'export PATH=$PATH:/usr/local/src/khmer/scripts' >> ~/.bashrc
 RUN echo 'export PATH=$PATH:/usr/local/src/khmer/sandbox' >> ~/.bashrc
-RUN source ~/.bashrc
+#RUN source ~/.bashrc
 
